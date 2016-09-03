@@ -46,18 +46,12 @@ public class MainActivity extends ActionBarActivity {
 
     private TextView lastKnownLocationView;
     private TextView updatableLocationView;
-    private TextView addressLocationView;
-    private TextView currentActivityView;
 
     private Observable<Location> lastKnownLocationObservable;
     private Observable<Location> locationUpdatesObservable;
-    private Observable<ActivityRecognitionResult> activityObservable;
 
     private Subscription lastKnownLocationSubscription;
     private Subscription updatableLocationSubscription;
-    private Subscription addressSubscription;
-    private Subscription activitySubscription;
-    private Observable<String> addressObservable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +60,6 @@ public class MainActivity extends ActionBarActivity {
 
         lastKnownLocationView = (TextView) findViewById(R.id.last_known_location_view);
         updatableLocationView = (TextView) findViewById(R.id.updated_location_view);
-        addressLocationView = (TextView) findViewById(R.id.address_for_location_view);
-        currentActivityView = (TextView) findViewById(R.id.activity_recent_view);
 
         locationProvider = new ReactiveLocationProvider(getApplicationContext());
         lastKnownLocationObservable = locationProvider.getLastKnownLocation();
@@ -102,25 +94,6 @@ public class MainActivity extends ActionBarActivity {
                         return locationProvider.getUpdatedLocation(locationRequest);
                     }
                 });
-
-        addressObservable = locationProvider.getUpdatedLocation(locationRequest)
-                .flatMap(new Func1<Location, Observable<List<Address>>>() {
-                    @Override
-                    public Observable<List<Address>> call(Location location) {
-                        return locationProvider.getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
-                    }
-                })
-                .map(new Func1<List<Address>, Address>() {
-                    @Override
-                    public Address call(List<Address> addresses) {
-                        return addresses != null && !addresses.isEmpty() ? addresses.get(0) : null;
-                    }
-                })
-                .map(new AddressToStringFunc())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-
-        activityObservable = locationProvider.getDetectedActivity(50);
     }
 
     @Override
@@ -141,46 +114,17 @@ public class MainActivity extends ActionBarActivity {
                     }
                 })
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView), new ErrorHandler());
-
-
-        addressSubscription = bindActivity(this, addressObservable)
-                .subscribe(new DisplayTextOnViewAction(addressLocationView), new ErrorHandler());
-
-        activitySubscription = bindActivity(this, activityObservable)
-                .map(new ToMostProbableActivity())
-                .map(new DetectedActivityToString())
-                .subscribe(new DisplayTextOnViewAction(currentActivityView), new ErrorHandler());
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         updatableLocationSubscription.unsubscribe();
-        addressSubscription.unsubscribe();
         lastKnownLocationSubscription.unsubscribe();
-        activitySubscription.unsubscribe();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("Geofencing").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                startActivity(new Intent(MainActivity.this, GeofenceActivity.class));
-                return true;
-            }
-        });
-        menu.add("Places").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (TextUtils.isEmpty(getString(R.string.API_KEY))) {
-                    Toast.makeText(MainActivity.this, "First you need to configure your API Key - see README.md", Toast.LENGTH_SHORT).show();
-                } else {
-                    startActivity(new Intent(MainActivity.this, PlacesActivity.class));
-                }
-                return true;
-            }
-        });
         menu.add("Mock Locations").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {

@@ -20,9 +20,7 @@ android {
 
 dependencies {
     compile 'com.google.android.gms:play-services-location:9.4.0'
-    compile 'com.google.android.gms:play-services-places:9.4.0'
-    compile 'com.google.android.gms:play-services-maps:9.4.0'
-    compile 'io.reactivex:rxjava:1.1.8'
+    compile 'io.reactivex:rxjava:1.1.9'
 }
 
 // Comment this to deploy to local maven repository

@@ -1,7 +1,9 @@
 package pl.charmas.android.reactivelocation.observables.location;
 
+import android.Manifest;
 import android.content.Context;
 import android.location.Location;
+import android.support.annotation.RequiresPermission;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -29,12 +31,14 @@ public class MockLocationObservable extends BaseLocationObservable<Status> {
         this.locationObservable = locationObservable;
     }
 
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     @Override
     protected void onGoogleApiClientReady(final GoogleApiClient apiClient, final Observer<? super Status> observer) {
         // this throws SecurityException if permissions are bad or mock locations are not enabled,
         // which is passed to observer's onError by BaseObservable
         LocationServices.FusedLocationApi.setMockMode(apiClient, true)
                 .setResultCallback(new ResultCallback<Status>() {
+                    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                     @Override
                     public void onResult(Status status) {
                         if (!status.isSuccess()) {
@@ -46,8 +50,10 @@ public class MockLocationObservable extends BaseLocationObservable<Status> {
                 });
     }
 
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     private void startLocationMocking(final GoogleApiClient apiClient, final Observer<? super Status> observer) {
         mockLocationSubscription = locationObservable.subscribe(new Action1<Location>() {
+            @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
             @Override
             public void call(Location location) {
                 LocationServices.FusedLocationApi.setMockLocation(apiClient, location)
@@ -75,6 +81,7 @@ public class MockLocationObservable extends BaseLocationObservable<Status> {
         });
     }
 
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     @Override
     protected void onUnsubscribed(GoogleApiClient locationClient) {
         if (locationClient.isConnected()) {
