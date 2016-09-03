@@ -1,1 +1,1 @@
-include ':android-reactive-location'
+include ':sample', ':android-reactive-location'

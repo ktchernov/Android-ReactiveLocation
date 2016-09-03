@@ -1,12 +1,5 @@
 apply plugin: 'com.android.application'
 
-def getGooglePlayServicesApiKey() {
-    if (REACTIVE_LOCATION_GMS_API_KEY != null && !REACTIVE_LOCATION_GMS_API_KEY.isEmpty()) {
-        return REACTIVE_LOCATION_GMS_API_KEY;
-    }
-    return ""
-}
-
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -16,7 +9,6 @@ android {
         targetSdkVersion 24
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
-        resValue "string", "API_KEY", getGooglePlayServicesApiKey()
     }
 
     compileOptions {
