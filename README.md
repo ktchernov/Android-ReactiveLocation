@@ -1,13 +1,17 @@
 ReactiveLocation library for Android
 ====================================
 
+A trimmed back fork of the [Android Reactive Locations](https://github.com/mcharmas/Android-ReactiveLocation)
+library. The library size has been reduced by trimming the library down to just the location API -
+the original library also includes Geofencing and Places API.
+
 Small library that wraps Google Play Services API in brilliant [RxJava](https://github.com/ReactiveX/RxJava)
 ```Observables``` reducing boilerplate to minimum.
 
-Current stable version - 0.9
+Current stable version - 1.1
 ---------------
 
-**This version works with Google Play Services 8.4.0 and RxJava 1.1.+**
+**This version works with Google Play Services 10.2.1 and RxJava 1.2.9+**
 
 What can you do with that?
 --------------------------
@@ -16,11 +20,6 @@ What can you do with that?
 * obtain last known location
 * subscribe for location updates
 * use location settings API
-* manage geofences
-* geocode location to list of addresses
-* activity recognition
-* use current place API
-* fetch place autocomplete suggestions
 
 How does the API look like?
 ----------------------------
@@ -42,9 +41,6 @@ locationProvider.getLastKnownLocation()
     });
 ```
 
-Yep, Java 8 is not there yet (and on Android it will take a while) but there is
-absolutely no Google Play Services LocationClient callbacks hell and there is no
-clean-up you have to do.
 
 ### Subscribing for location updates
 
@@ -94,73 +90,11 @@ Subscription subscription = locationProvider.getDetectedActivity(0) // detection
     });
 ```
 
-### Reverse geocode location
-
-Do you need address for location?
-
-```java
-Observable<List<Address>> reverseGeocodeObservable = locationProvider
-    .getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), MAX_ADDRESSES);
-
-reverseGeocodeObservable
-    .subscribeOn(Schedulers.io())               // use I/O thread to query for addresses
-    .observeOn(AndroidSchedulers.mainThread())  // return result in main android thread to manipulate UI
-    .subscribe(...);
-```
-
-### Geocode location
-
-Do you need address for a text search query?
-
-```java
-Observable<List<Address>> geocodeObservable = locationProvider
-    .getGeocodeObservable(String userQuery, MAX_ADDRESSES);
-
-geocodeObservable
-    .subscribeOn(Schedulers.io())
-    .observeOn(AndroidSchedulers.mainThread())
-    .subscribe(...);
-```
-
-### Managing geofences
-
-For geofence management use `addGeofences` and `removeGeofences` methods.
-
-### Checking location settings though location settings API
-
-To get ```LocationSettingsResponse``` for your ```LocationRequest``` check
-out ```ReactiveLocationProvider.checkLocationSettings()``` method. Sample
-usage can be found in **sample** project in ```MainActivity``` class.
-
-### Connecting to Google Play Services API
-
-If you just need managed connection to Play Services API
-use ```ReactiveLocationProvider.getGoogleApiClientObservable()```.
-On subscription it will connect to the API.
-Unsubscription will close the connection.
-
 ### Creating observable from PendingResult
 
 If you are manually using Google Play Services and you are dealing with
 ```PendingResult``` you can easily transform them to observables with
 ```ReactiveLocationProvider.fromPendingResult()``` method.
-
-### Transforming buffers to observable
-
-To transform any buffer to observable and autorelease it on unsubscription
-use ```DataBufferObservable.from()``` method. It will let you easily flatMap
-such data as ```PlaceLikelihoodBuffer``` or ```AutocompletePredictionBuffer```
-from Places API. For usage example see ```PlacesActivity``` sample.
-
-### Places API
-
-You can fetch current place or place suggestions using:
-
-* ```ReactiveLocationProvider.getCurrentPlace()```
-* ```ReactiveLocationProvider.getPlaceAutocompletePredictions()```
-* ```ReactiveLocationProvider.getPlaceById()```
-
-For more info see sample project and ```PlacesActivity```.
 
 ### Cooler examples
 
@@ -198,32 +132,21 @@ Just use it as dependency in your *build.gradle* file
 along with Google Play Services and RxJava.
 
 ```groovy
+
+allprojects {
+	repositories {
+		// ...
+		maven { url "https://jitpack.io" }
+	}
+}
+
 dependencies {
     ...
-    compile 'pl.charmas.android:android-reactive-location:0.9@aar'
+    compile 'com.github.ktchernov:Android-ReactiveLocation:v1.0'
     compile 'com.google.android.gms:play-services-location:8.4.0' //you can use newer GMS version if you need
-    compile 'io.reactivex:rxjava:1.1.5' //you can override RxJava version if you need
-
-    //RxAndroid nor NotRxAndroid is not required by library
-    compile 'io.reactivex:rxandroid:0.25.0'
+    compile 'io.reactivex:rxjava:1.2.9' //you can override RxJava version with a newer 1.x version if you wish
 }
 ```
-
-### Maven
-
-Ensure you have android-maven-plugin version that support **aar** archives and add
-following dependency:
-
-```xml
-<dependency>
-    <groupId>pl.charmas.android</groupId>
-    <artifactId>android-reactive-location</artifactId>
-    <version>0.8</version>
-    <type>aar</type>
-</dependency>
-```
-
-It may be necessary to add google play services and rxanroid dependency as well.
 
 Sample
 ------
@@ -236,13 +159,10 @@ Obtained key should be exported as gradle property named: ```REACTIVE_LOCATION_G
 example in ```~/.gradle/gradle.properties```.
 
 
-References
-------
-
-If you need Google Fit library rxified please take a look at [RxFit](https://github.com/patloew/RxFit).
-
 License
 =======
+
+    Copyright (C) 2017 Konstantin Tchernov (https://github.com/ktchernov)
 
     Copyright (C) 2015 Michał Charmas (http://blog.charmas.pl)
 
